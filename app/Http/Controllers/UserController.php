@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -12,54 +14,176 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->get();
+
         return view('admin.utilisateurs', compact('users'));
     }
 
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:admin,livreur',
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+
+            'role' => [
+                'required',
+                'in:admin,livreur',
+            ],
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+
+            // Mot de passe aléatoire
+            'password' => Hash::make(Str::random(40)),
+
+            'role' => $validated['role'],
         ]);
 
-        return redirect()->back()->with('success', 'Utilisateur créé avec succès.');
+
+        $status = Password::sendResetLink([
+            'email' => $user->email,
+        ]);
+
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return redirect()
+                ->back()
+                ->withErrors([
+                    'email' =>
+                        'Le compte a été créé, mais l’email pour définir le mot de passe n’a pas pu être envoyé.',
+                ]);
+        }
+
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Utilisateur créé avec succès. Un email a été envoyé à '
+                . $user->email
+                . ' pour choisir son mot de passe.'
+            );
     }
+
 
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role' => 'required|in:admin,livreur',
-            'password' => 'nullable|min:6',
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+
+            'role' => [
+                'required',
+                'in:admin,livreur',
+            ],
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->role = $request->role;
 
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->role = $validated['role'];
 
         $user->save();
 
-        return redirect()->back()->with('success', 'Utilisateur modifié avec succès.');
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Utilisateur modifié avec succès.'
+            );
     }
+
+
+    /**
+     * Modifier le mot de passe de l'utilisateur connecté.
+     */
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate(
+            [
+                'current_password' => [
+                    'required',
+                    'current_password',
+                ],
+
+                'new_password' => [
+                    'required',
+                    'string',
+                    'confirmed',
+                    'min:8',
+                    'regex:/[A-Z]/',
+                    'regex:/[a-z]/',
+                    'regex:/[0-9]/',
+                    'regex:/[^A-Za-z0-9]/',
+                ],
+            ],
+            [
+                'current_password.required' =>
+                    'Veuillez saisir votre mot de passe actuel.',
+
+                'current_password.current_password' =>
+                    'Votre mot de passe actuel est incorrect.',
+
+                'new_password.required' =>
+                    'Veuillez saisir un nouveau mot de passe.',
+
+                'new_password.confirmed' =>
+                    'La confirmation du nouveau mot de passe ne correspond pas.',
+
+                'new_password.min' =>
+                    'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+
+                'new_password.regex' =>
+                    'Le nouveau mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.',
+            ]
+        );
+
+
+        $request->user()->update([
+            'password' => Hash::make($validated['new_password']),
+        ]);
+
+
+        return back()->with(
+            'password_success',
+            'Votre mot de passe a été modifié avec succès.'
+        );
+    }
+
 
     public function destroy(User $user)
     {
         $user->delete();
 
-        return redirect()->back()->with('success', 'Utilisateur supprimé avec succès.');
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Utilisateur supprimé avec succès.'
+            );
     }
 }

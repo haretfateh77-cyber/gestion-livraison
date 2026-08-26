@@ -88,6 +88,23 @@
             margin-right:8px;
         }
 
+        .forgot-password{
+            text-align:right;
+            margin-top:-8px;
+            margin-bottom:18px;
+        }
+
+        .forgot-password a{
+            color:#0d1b4c;
+            text-decoration:none;
+            font-size:13px;
+            font-weight:bold;
+        }
+
+        .forgot-password a:hover{
+            text-decoration:underline;
+        }
+
         .error{
             color:red;
             font-size:13px;
@@ -99,6 +116,62 @@
             text-align:center;
             margin-bottom:15px;
         }
+
+        .footer{
+            margin-top:20px;
+            text-align:center;
+            font-size:13px;
+            color:#666;
+        }
+
+        .footer a{
+            color:#0d1b4c;
+            font-weight:bold;
+            text-decoration:none;
+        }
+
+        .footer a:hover{
+            text-decoration:underline;
+        }
+
+        .privacy-consent {
+    margin-bottom: 20px;
+}
+
+.privacy-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.privacy-checkbox input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.privacy-checkbox label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.privacy-info {
+    margin-top: 8px;
+    margin-left: 28px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.privacy-info a {
+    color: #e40046;
+    text-decoration: underline;
+}
     </style>
 </head>
 
@@ -114,38 +187,90 @@
     <p class="subtitle">Accédez à votre espace de gestion</p>
 
     @if (session('status'))
-        <div class="status">{{ session('status') }}</div>
+        <div class="status">
+            {{ session('status') }}
+        </div>
     @endif
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <label for="email">Email</label>
-        <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="Votre email" required autofocus>
+        <input
+            id="email"
+            type="email"
+            name="email"
+            value="{{ old('email') }}"
+            placeholder="Votre email"
+            required
+            autofocus
+        >
 
         @error('email')
             <div class="error">{{ $message }}</div>
         @enderror
 
         <label for="password">Mot de passe</label>
-        <input id="password" type="password" name="password" placeholder="Votre mot de passe" required>
+        <input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Votre mot de passe"
+            required
+        >
 
         @error('password')
             <div class="error">{{ $message }}</div>
         @enderror
 
+        @if (Route::has('password.request'))
+            <div class="forgot-password">
+                <a href="{{ route('password.request') }}">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+        @endif
+
+        <div class="privacy-consent">
+
+    <div class="privacy-checkbox">
+
+        <input
+            type="checkbox"
+            name="privacy_consent"
+            id="privacy_consent"
+            value="1"
+            required
+        >
+
+        <label for="privacy_consent">
+            J'accepte la politique de protection des données à caractère personnel
+        </label>
+
+    </div>
+
+    
+
+</div>
+
         <div class="remember">
             <input type="checkbox" name="remember" id="remember">
-            <label for="remember" style="margin:0;font-weight:normal;">Se souvenir de moi</label>
+            <label for="remember" style="margin:0;font-weight:normal;">
+                Se souvenir de moi
+            </label>
         </div>
 
-        <button type="submit">Se connecter</button>
-        <p style="margin-top:20px; text-align:center; font-size:13px; color:#666;">
-    En vous connectant, vous acceptez notre
-    <a href="{{ route('rgpd') }}" style="color:#0d1b4c; font-weight:bold;">
-        Politique de confidentialité
-    </a>.
-</p>
+        <button type="submit">
+            Se connecter
+        </button>
+
+        <div class="footer">
+            En vous connectant, vous acceptez notre
+            <a href="{{ route('rgpd') }}">
+                Politique de confidentialité
+            </a>.
+        </div>
+
     </form>
 
 </div>

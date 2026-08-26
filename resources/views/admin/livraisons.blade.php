@@ -27,6 +27,9 @@
             <li onclick="window.location.href='{{ route('admin.utilisateurs') }}'">👥 Utilisateurs</li>
 
             <li onclick="window.location.href='{{ route('admin.profil') }}'">👤 Profil</li>
+            <li onclick="window.location.href='{{ route('admin.messages.index') }}'">
+    💬 Messages
+</li>
         </ul>
 
         <button onclick="logout()">Déconnexion</button>

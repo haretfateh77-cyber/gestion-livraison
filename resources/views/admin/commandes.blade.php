@@ -22,7 +22,11 @@
             <li style="font-weight:bold;">📦 Commandes</li>
             <li onclick="window.location.href='{{ route('admin.livraisons') }}'">🚚 Livraisons</li>
             <li onclick="window.location.href='{{ route('admin.utilisateurs') }}'">👥 Utilisateurs</li>
-            <li onclick="window.location.href='{{ route('admin.profil') }}'">👤 Profil</li>
+            <li onclick="window.location.href='{{ route('admin.profil') }}'">👤 Profil</
+            li>
+            <li onclick="window.location.href='{{ route('admin.messages.index') }}'">
+    💬 Messages
+</li>
         </ul>
 
         <button onclick="logout()">Déconnexion</button>

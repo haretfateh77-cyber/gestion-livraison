@@ -2,128 +2,327 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Gestion des utilisateurs</title>
+
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="icon" type="image/webp" href="{{ asset('images/OIP (3).webp') }}">
+
+    <style>
+        .message-success {
+            margin: 15px 0;
+            padding: 12px 16px;
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+        }
+
+        .validation-errors {
+            margin: 15px 0;
+            padding: 14px 18px;
+            color: #842029;
+            background-color: #f8d7da;
+            border: 1px solid #f5c2c7;
+            border-radius: 8px;
+        }
+
+        .validation-errors strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .validation-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .validation-errors li {
+            margin-bottom: 5px;
+        }
+
+       
+    </style>
 </head>
 
 <body>
+
 <div class="layout">
 
     <div class="sidebar">
+
         <div class="logo">
-            <img src="{{ asset('images/OIP (3).webp') }}" alt="Carrefour">
+            <img
+                src="{{ asset('images/OIP (3).webp') }}"
+                alt="Carrefour"
+            >
         </div>
 
         <ul>
-            <li onclick="window.location.href='{{ route('admin.dashboard') }}'">🏠 Tableau de bord</li>
-            <li onclick="window.location.href='{{ route('admin.commandes') }}'">📦 Commandes</li>
-            <li onclick="window.location.href='{{ route('admin.livraisons') }}'">🚚 Livraisons</li>
-            <li style="font-weight:bold;">👥 Utilisateurs</li>
-            <li onclick="window.location.href='{{ route('admin.profil') }}'">👤 Profil</li>
+
+            <li onclick="window.location.href='{{ route('admin.dashboard') }}'">
+                🏠 Tableau de bord
+            </li>
+
+            <li onclick="window.location.href='{{ route('admin.commandes') }}'">
+                📦 Commandes
+            </li>
+
+            <li onclick="window.location.href='{{ route('admin.livraisons') }}'">
+                🚚 Livraisons
+            </li>
+
+            <li style="font-weight: bold;">
+                👥 Utilisateurs
+            </li>
+
+            <li onclick="window.location.href='{{ route('admin.profil') }}'">
+                👤 Profil
+            </li>
+
+            <li onclick="window.location.href='{{ route('admin.messages.index') }}'">
+                💬 Messages
+            </li>
+
         </ul>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit">Déconnexion</button>
+
+            <button type="submit">
+                Déconnexion
+            </button>
         </form>
+
     </div>
 
     <div class="main">
+
         <h1>Gestion des utilisateurs</h1>
 
         @if(session('success'))
-            <p style="color:green; margin:15px 0;">{{ session('success') }}</p>
+            <div class="message-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="validation-errors">
+
+                <strong>
+                    Impossible d’enregistrer les modifications :
+                </strong>
+
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+
+            </div>
         @endif
 
         <section class="table">
+
             <h2>Ajouter un utilisateur</h2>
 
-            <form method="POST" action="{{ route('admin.utilisateurs.store') }}">
+            <form
+                method="POST"
+                action="{{ route('admin.utilisateurs.store') }}"
+            >
                 @csrf
 
-                <input type="text" name="name" placeholder="Nom" required>
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Mot de passe" required>
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ old('name') }}"
+                    placeholder="Nom"
+                    maxlength="255"
+                    required
+                >
+
+                <input
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    placeholder="Email"
+                    maxlength="255"
+                    required
+                >
+
+                
 
                 <select name="role" required>
-                    <option value="livreur">Livreur</option>
-                    <option value="admin">Admin</option>
+
+                    <option
+                        value="livreur"
+                        {{ old('role') === 'livreur' ? 'selected' : '' }}
+                    >
+                        Livreur
+                    </option>
+
+                    <option
+                        value="admin"
+                        {{ old('role') === 'admin' ? 'selected' : '' }}
+                    >
+                        Admin
+                    </option>
+
                 </select>
 
-                <button type="submit">Créer l'utilisateur</button>
+                <button type="submit">
+                    Créer l’utilisateur
+                </button>
+
             </form>
+
         </section>
 
         <section class="table">
+
             <h2>Liste des utilisateurs</h2>
 
             <table>
+
                 <thead>
+
                     <tr>
                         <th>ID</th>
                         <th>Nom</th>
                         <th>Email</th>
                         <th>Rôle</th>
-                        <th>Nouveau mot de passe</th>
                         <th>Modifier</th>
                         <th>Supprimer</th>
                     </tr>
+
                 </thead>
 
                 <tbody>
-                    @foreach($users as $user)
-                        <tr>
-                            <form method="POST" action="{{ route('admin.utilisateurs.update', $user->id) }}">
-                                @csrf
-                                @method('PUT')
 
-                                <td>{{ $user->id }}</td>
+                @forelse($users as $user)
 
-                                <td>
-                                    <input type="text" name="name" value="{{ $user->name }}" required>
-                                </td>
+                    <tr>
 
-                                <td>
-                                    <input type="email" name="email" value="{{ $user->email }}" required>
-                                </td>
+                        <form
+                            method="POST"
+                            action="{{ route('admin.utilisateurs.update', $user->id) }}"
+                        >
+                            @csrf
 
-                                <td>
-                                    <select name="role" required>
-                                        <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                                        <option value="livreur" {{ $user->role == 'livreur' ? 'selected' : '' }}>Livreur</option>
-                                    </select>
-                                </td>
-
-                                <td>
-                                    <input type="password" name="password" placeholder="Facultatif">
-                                </td>
-
-                                <td>
-                                    <button type="submit">Modifier</button>
-                                </td>
-                            </form>
+                            @method('PUT')
 
                             <td>
-                                <form method="POST" action="{{ route('admin.utilisateurs.destroy', $user->id) }}">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="submit" onclick="return confirm('Supprimer cet utilisateur ?')">
-                                        Supprimer
-                                    </button>
-                                </form>
+                                {{ $user->id }}
                             </td>
-                        </tr>
-                    @endforeach
+
+                            <td>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value="{{ $user->name }}"
+                                    maxlength="255"
+                                    required
+                                >
+
+                            </td>
+
+                            <td>
+
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value="{{ $user->email }}"
+                                    maxlength="255"
+                                    required
+                                >
+
+                            </td>
+
+                            <td>
+
+                                <select name="role" required>
+
+                                    <option
+                                        value="admin"
+                                        {{ $user->role === 'admin' ? 'selected' : '' }}
+                                    >
+                                        Admin
+                                    </option>
+
+                                    <option
+                                        value="livreur"
+                                        {{ $user->role === 'livreur' ? 'selected' : '' }}
+                                    >
+                                        Livreur
+                                    </option>
+
+                                </select>
+
+                            </td>
+
+                            
+
+                            <td>
+
+                                <button type="submit">
+                                    Modifier
+                                </button>
+
+                            </td>
+
+                        </form>
+
+                        <td>
+
+                            <form
+                                method="POST"
+                                action="{{ route('admin.utilisateurs.destroy', $user->id) }}"
+                            >
+                                @csrf
+
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
+                                    onclick="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')"
+                                >
+                                    Supprimer
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+
+                        <td colspan="6">
+                            Aucun utilisateur enregistré.
+                        </td>
+
+                    </tr>
+
+                @endforelse
+
                 </tbody>
+
             </table>
+
         </section>
+
         <footer>
-    © {{ date('Y') }} Carrefour - Application de gestion des livraisons
-</footer>
+            © {{ date('Y') }} Carrefour -
+            Application de gestion des livraisons
+        </footer>
+
     </div>
 
 </div>
+
 </body>
 </html>
