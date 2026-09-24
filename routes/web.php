@@ -8,6 +8,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LivraisonController;
+use App\Http\Controllers\CommandeController;
+use App\Http\Controllers\ImportCommandeController;
 
 
 /*
@@ -54,6 +56,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
         return view('admin.commandes', compact('commandes'));
     })->name('admin.commandes');
+    Route::post('/admin/commandes/import', [CommandeController::class, 'import'])
+    ->name('admin.commandes.import');
 
     // Livraisons
     Route::get('/admin/livraisons', function () {
@@ -90,7 +94,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('admin.messages.show');
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Routes livreur
@@ -99,17 +102,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:livreur'])->group(function () {
 
-    // Accueil livreur
+    // Tableau de bord livreur
     Route::get('/livreur', function () {
         return view('livreur');
     })->name('livreur');
+
+    // Page Mes livraisons
+    Route::get('/livreur/livraisons', function () {
+        return view('livreur.livraisons');
+    })->name('livreur.livraisons');
 
     // Profil livreur
     Route::get('/livreur/profil', function () {
         return view('profil');
     })->name('livreur.profil');
 
-    // Changement sécurisé du mot de passe du livreur
+    // Modification du mot de passe
     Route::post('/livreur/profil/mot-de-passe', [UserController::class, 'updatePassword'])
         ->name('livreur.profil.password');
 
@@ -120,6 +128,7 @@ Route::middleware(['auth', 'role:livreur'])->group(function () {
     Route::post('/livreur/contact-admin', [MessageController::class, 'store'])
         ->name('livreur.messages.store');
 });
+
 
 
 /*

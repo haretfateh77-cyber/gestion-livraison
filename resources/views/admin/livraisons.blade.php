@@ -45,7 +45,6 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>N° Livraison</th>
                         <th>Commande</th>
                         <th>Livreur</th>
                         <th>Date</th>
@@ -69,6 +68,11 @@
 
 <script>
 
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
 function logout() {
 
     fetch("/logout", {
@@ -87,7 +91,12 @@ function logout() {
 
 function chargerLivraisons() {
 
-    fetch("/api/livraisons")
+    fetch("/api/livraisons", {
+        credentials: "include",
+        headers: {
+            "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
+        }
+    })
 
     .then(response => response.json())
 
@@ -102,16 +111,20 @@ function chargerLivraisons() {
             tbody.innerHTML += `
                 <tr>
                     <td>${livraison.id}</td>
-                    <td>${livraison.num_livraison}</td>
                     <td>${livraison.commande_id}</td>
                     <td>${livraison.livreur ? livraison.livreur.name : livraison.livreur_id}</td>
                     <td>${livraison.date_livraison ?? ""}</td>
                     <td>${livraison.adresse}</td>
                     <td>${livraison.statut}</td>
                     <td>
-                        <button onclick="modifierLivraison(${livraison.id})">Modifier</button>
-                        <button onclick="supprimerLivraison(${livraison.id})">Supprimer</button>
-                    </td>
+    <button onclick="modifierLivraison(${livraison.id})">Modifier</button>
+
+    ${
+        livraison.statut !== "Livrée"
+        ? `<button onclick="supprimerLivraison(${livraison.id})">Supprimer</button>`
+        : ""
+    }
+</td>
                 </tr>
             `;
 
@@ -133,47 +146,34 @@ async function modifierLivraison(id) {
 
     const nouveauStatut = prompt("Nouveau statut : En préparation / En cours / Livrée");
 
-    const nouvelleDate = prompt("Nouvelle date : 2026-07-01");
-
-    if(!nouvelleAdresse || !nouveauStatut || !nouvelleDate){
-
+    if (!nouvelleAdresse || !nouveauStatut) {
         alert("Modification annulée");
-
         return;
-
     }
 
-    const response = await fetch(`/api/livraisons/${id}`,{
+    const response = await fetch(`/api/livraisons/${id}`, {
+        method: "PUT",
+        credentials: "include",
 
-        method:"PUT",
-
-        headers:{
-            "Content-Type":"application/json",
-            "Accept":"application/json"
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
         },
 
-        body:JSON.stringify({
-            adresse:nouvelleAdresse,
-            statut:nouveauStatut,
-            date_livraison:nouvelleDate
+        body: JSON.stringify({
+            adresse: nouvelleAdresse,
+            statut: nouveauStatut
         })
-
     });
 
-    if(response.ok){
-
+    if (response.ok) {
         alert("Livraison modifiée !");
-
         chargerLivraisons();
-
-    }else{
-
+    } else {
         alert("Erreur modification");
-
     }
-
 }
-
 async function supprimerLivraison(id){
 
     if(!confirm("Supprimer cette livraison ?")) return;
@@ -181,9 +181,11 @@ async function supprimerLivraison(id){
     const response = await fetch(`/api/livraisons/${id}`,{
 
         method:"DELETE",
+        credentials: "include",
 
         headers:{
-            "Accept":"application/json"
+            "Accept":"application/json",
+            "X-XSRF-TOKEN": getCookie("XSRF-TOKEN")
         }
 
     });
@@ -205,6 +207,8 @@ async function supprimerLivraison(id){
 chargerLivraisons();
 
 </script>
+
+@include('partials.accessibility')
 
 </body>
 </html>

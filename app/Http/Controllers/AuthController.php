@@ -17,8 +17,15 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = Auth::user();
+
+        $token = $user->createToken(
+            $request->input('device_name', 'flutter-mobile')
+        )->plainTextToken;
+
         return response()->json([
-            'user' => Auth::user(),
+            'user' => $user,
+            'token' => $token,
             'message' => 'Login successful'
         ]);
     }

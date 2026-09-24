@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Commande;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CommandesImport;
 
 class CommandeController extends Controller
 {
@@ -15,11 +17,12 @@ class CommandeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'num_commande' => 'required|integer|unique:commandes,num_commande',
-            'date_commande' => 'required|date',
             'montant' => 'required|numeric',
             'statut' => 'required|string',
         ]);
+
+        // Date générée automatiquement
+        $validated['date_commande'] = now()->toDateString();
 
         $commande = Commande::create($validated);
 
@@ -36,7 +39,6 @@ class CommandeController extends Controller
         $commande = Commande::findOrFail($id);
 
         $validated = $request->validate([
-            'num_commande' => 'sometimes|integer|unique:commandes,num_commande,' . $commande->id,
             'date_commande' => 'sometimes|date',
             'montant' => 'sometimes|numeric',
             'statut' => 'sometimes|string',
@@ -51,9 +53,9 @@ class CommandeController extends Controller
     {
         $commande = Commande::findOrFail($id);
 
-        if ($commande->livraison) {
+        if ($commande->statut === 'Livrée' || $commande->livraison) {
             return response()->json([
-                'message' => 'Impossible de supprimer cette commande car une livraison y est associée.'
+                'message' => 'Impossible de supprimer une commande livrée ou associée à une livraison.'
             ], 400);
         }
 
@@ -62,5 +64,24 @@ class CommandeController extends Controller
         return response()->json([
             'message' => 'Commande supprimée'
         ]);
+    }
+
+    /**
+     * Importer des commandes depuis un fichier Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'fichier' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        Excel::import(
+            new CommandesImport,
+            $request->file('fichier')
+        );
+
+        return redirect()
+            ->route('admin.commandes')
+            ->with('success', 'Les commandes ont été importées avec succès.');
     }
 }

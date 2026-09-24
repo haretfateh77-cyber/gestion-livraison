@@ -10,6 +10,7 @@
     <title>Carrefour | Gestion des livraisons</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 
 </head>
 
@@ -139,26 +140,8 @@
 
                 <div class="progress-container">
 
-                    <div class="progress-info">
 
-                        <span>
-                            Livraisons traitées
-                        </span>
-
-                        <span>
-                            76%
-                        </span>
-
-                    </div>
-
-
-                    <div class="progress">
-
-                        <div class="progress-bar"></div>
-
-                    </div>
-
-                </div>
+            
 
 
                 <div class="delivery-item">
@@ -416,6 +399,101 @@
 
         </section>
 
+
+        <!-- =========================
+             ACCESSIBILITÉ
+        ========================= -->
+
+        <section
+            class="table accessibility-section"
+            id="accessibilite"
+        >
+
+            <h2>♿ Accessibilité</h2>
+
+            <p class="accessibility-description">
+                Personnalisez l'affichage de l'application selon vos besoins,
+                avant même de vous connecter. Vos préférences seront
+                mémorisées sur cet appareil.
+            </p>
+
+
+            <!-- CONTRASTE -->
+
+            <div class="accessibility-option">
+
+                <div>
+
+                    <strong>
+                        Mode contraste élevé
+                    </strong>
+
+                    <p>
+                        Augmenter le contraste pour faciliter la lecture de l'application.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="contrastButton"
+                    onclick="toggleContrast()"
+                >
+                    Activer
+                </button>
+
+            </div>
+
+
+            <!-- TAILLE TEXTE -->
+
+            <div class="accessibility-option">
+
+                <div>
+
+                    <strong>
+                        🔠 Taille du texte
+                    </strong>
+
+                    <p>
+                        Modifiez la taille du texte pour améliorer la lisibilité de l'application.
+                    </p>
+
+                </div>
+
+
+                <div class="text-size-buttons">
+
+                    <button
+                        type="button"
+                        onclick="setTextSize('small')"
+                        id="textSmall"
+                    >
+                        A−
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="setTextSize('normal')"
+                        id="textNormal"
+                    >
+                        A
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="setTextSize('large')"
+                        id="textLarge"
+                    >
+                        A+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
 
@@ -502,6 +580,104 @@
     </div>
 
 
+    <style>
+
+    /* =========================================================
+       ACCESSIBILITE — mise en forme propre à la page d'accueil
+    ========================================================= */
+
+    .accessibility-section {
+        margin: 40px auto 0;
+        max-width: 900px;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .accessibility-description {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .accessibility-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 15px;
+        margin-top: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+
+    .accessibility-option p {
+        margin-top: 6px;
+        color: #666;
+    }
+
+    #contrastButton {
+        min-width: 120px;
+        padding: 12px 18px;
+        border: 0;
+        border-radius: 7px;
+        background: #0d1b4c;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #contrastButton:hover {
+        background: #3859d6;
+    }
+
+    .text-size-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .text-size-buttons button {
+        min-width: 50px;
+        min-height: 44px;
+        font-size: 18px;
+        font-weight: bold;
+        border: 0;
+        border-radius: 7px;
+        background: #0d1b4c;
+        color: white;
+        cursor: pointer;
+    }
+
+    .text-size-buttons button:hover {
+        background: #3859d6;
+    }
+
+
+    /* =========================================================
+       CONTRASTE ELEVE — éléments propres à la page d'accueil
+       (le reste des règles génériques vient du partial accessibilité)
+    ========================================================= */
+
+    body.contrast-mode .accessibility-section {
+        background: #111 !important;
+        color: #fff !important;
+        border: 2px solid #fff;
+    }
+
+    body.contrast-mode header,
+    body.contrast-mode footer {
+        background: #000 !important;
+        color: #fff !important;
+        border-color: #fff !important;
+    }
+
+    </style>
+
+
+
+
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -554,6 +730,7 @@
 
     </script>
 
+ @include('partials.accessibility')
 
 </body>
 

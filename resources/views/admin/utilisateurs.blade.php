@@ -240,27 +240,13 @@
 
                             </td>
 
-                            <td>
+                            
 
-                                <select name="role" required>
-
-                                    <option
-                                        value="admin"
-                                        {{ $user->role === 'admin' ? 'selected' : '' }}
-                                    >
-                                        Admin
-                                    </option>
-
-                                    <option
-                                        value="livreur"
-                                        {{ $user->role === 'livreur' ? 'selected' : '' }}
-                                    >
-                                        Livreur
-                                    </option>
-
-                                </select>
-
-                            </td>
+        <td>
+    <strong>
+        {{ $user->role === 'admin' ? 'Admin' : 'Livreur' }}
+    </strong>
+</td>                        
 
                             
 
@@ -323,6 +309,8 @@
     </div>
 
 </div>
+
+@include('partials.accessibility')
 
 </body>
 </html>

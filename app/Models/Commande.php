@@ -10,7 +10,6 @@ class Commande extends Model
     use HasFactory;
 
     protected $fillable = [
-        'num_commande',
         'date_commande',
         'montant',
         'statut',

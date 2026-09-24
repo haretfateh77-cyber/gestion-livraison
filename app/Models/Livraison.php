@@ -10,7 +10,6 @@ class Livraison extends Model
     use HasFactory;
 
     protected $fillable = [
-        'num_livraison',
         'commande_id',
         'livreur_id',
         'date_livraison',
@@ -28,4 +27,3 @@ class Livraison extends Model
         return $this->belongsTo(User::class, 'livreur_id');
     }
 }
-

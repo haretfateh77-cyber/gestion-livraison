@@ -190,23 +190,23 @@
 
                 @forelse($livraisonsRecentes as $livraison)
 
-                    <li>
+    <li>
 
-                        <strong>
-                            Livraison {{ $livraison->num_livraison }}
-                        </strong>
+        <strong>
+            Livraison #{{ $livraison->id }}
+        </strong>
 
-                        - {{ $livraison->statut }}
+        - {{ $livraison->statut }}
 
-                    </li>
+    </li>
 
-                @empty
+@empty
 
-                    <li>
-                        Aucune livraison récente.
-                    </li>
+    <li>
+        Aucune livraison récente.
+    </li>
 
-                @endforelse
+@endforelse
 
             </ul>
 
@@ -253,13 +253,6 @@
 
             @csrf
 
-            <input
-                type="text"
-                name="num_livraison"
-                value="{{ old('num_livraison') }}"
-                placeholder="N° livraison"
-                required
-            >
 
 
             <select name="commande_id" required>
@@ -274,35 +267,7 @@
                         value="{{ $commande->id }}"
                         {{ old('commande_id') == $commande->id ? 'selected' : '' }}
                     >
-                        {{ $commande->num_commande }}
-                    </option>
-
-                @endforeach
-
-            </select>
-
-
-            <input
-                type="date"
-                name="date_livraison"
-                value="{{ old('date_livraison') }}"
-                required
-            >
-
-
-            <select name="livreur_id" required>
-
-                <option value="">
-                    Choisir un livreur
-                </option>
-
-                @foreach($livreurs as $livreur)
-
-                    <option
-                        value="{{ $livreur->id }}"
-                        {{ old('livreur_id') == $livreur->id ? 'selected' : '' }}
-                    >
-                        {{ $livreur->name }}
+                        Commande #{{ $commande->id }}
                     </option>
 
                 @endforeach
@@ -358,7 +323,6 @@
                 <tr>
 
                     <th>ID</th>
-                    <th>N° Commande</th>
                     <th>Date</th>
                     <th>Montant</th>
                     <th>Statut</th>
@@ -376,10 +340,6 @@
 
                         <td>
                             {{ $commande->id }}
-                        </td>
-
-                        <td>
-                            {{ $commande->num_commande }}
                         </td>
 
                         <td>
@@ -422,3 +382,4 @@
 
 </div>
 
+@include('partials.accessibility')

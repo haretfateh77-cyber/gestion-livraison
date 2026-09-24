@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\LivraisonAffectee;
 use App\Models\Livraison;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class LivraisonController extends Controller
@@ -19,66 +23,125 @@ class LivraisonController extends Controller
     /**
      * Créer une livraison.
      */
-   public function store(Request $request)
-{
-    $validated = $request->validate(
-        [
-            'num_livraison' => [
-                'required',
-                'integer',
-                'unique:livraisons,num_livraison',
+    public function store(Request $request)
+    {
+        $validated = $request->validate(
+            [
+                'commande_id' => [
+                    'required',
+                    'exists:commandes,id',
+                    'unique:livraisons,commande_id',
+                ],
+
+                'statut' => [
+                    'required',
+                    'string',
+                ],
+
+                'adresse' => [
+                    'required',
+                    'string',
+                ],
             ],
+            [
+                'commande_id.required' =>
+                    'Veuillez sélectionner une commande.',
 
-            'commande_id' => [
-                'required',
-                'exists:commandes,id',
-                'unique:livraisons,commande_id',
-            ],
+                'commande_id.unique' =>
+                    'Cette commande possède déjà une livraison. Une commande ne peut avoir qu’une seule livraison.',
 
-            'livreur_id' => [
-                'required',
-                'exists:users,id',
-            ],
+                'commande_id.exists' =>
+                    'La commande sélectionnée n’existe pas.',
 
-            'date_livraison' => [
-                'nullable',
-                'date',
-            ],
+                'adresse.required' =>
+                    'L’adresse de livraison est obligatoire.',
+            ]
+        );
 
-            'statut' => [
-                'required',
-                'string',
-            ],
+        /*
+        |--------------------------------------------------------------------------
+        | Recherche automatique d'un livreur disponible
+        |--------------------------------------------------------------------------
+        */
 
-            'adresse' => [
-                'required',
-                'string',
-            ],
-        ],
-        [
-            'commande_id.unique' =>
-                'Cette commande possède déjà une livraison. Une commande ne peut avoir qu’une seule livraison.',
+        $livreur = User::where('role', 'livreur')
+            ->whereDoesntHave('livraisons', function ($query) {
+                $query->whereIn('statut', [
+                    'En préparation',
+                    'En cours'
+                ]);
+            })
+            ->first();
 
-            'commande_id.exists' =>
-                'La commande sélectionnée n’existe pas.',
+        /*
+        |--------------------------------------------------------------------------
+        | Vérifier qu'un livreur est disponible
+        |--------------------------------------------------------------------------
+        */
 
-            'num_livraison.unique' =>
-                'Ce numéro de livraison existe déjà.',
+        if (!$livreur) {
+            return back()
+                ->withErrors([
+                    'livreur_id' =>
+                        'Aucun livreur n’est disponible actuellement.'
+                ])
+                ->withInput();
+        }
 
-            'livreur_id.exists' =>
-                'Le livreur sélectionné n’existe pas.',
+        /*
+        |--------------------------------------------------------------------------
+        | Génération automatique de la date
+        |--------------------------------------------------------------------------
+        */
 
-            'adresse.required' =>
-                'L’adresse de livraison est obligatoire.',
-        ]
-    );
+        $validated['date_livraison'] = now()->toDateString();
 
-    Livraison::create($validated);
+        /*
+        |--------------------------------------------------------------------------
+        | Attribution automatique du livreur
+        |--------------------------------------------------------------------------
+        */
 
-    return redirect()
-        ->route('admin.dashboard')
-        ->with('success', 'Livraison créée avec succès.');
-}
+        $validated['livreur_id'] = $livreur->id;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Création de la livraison
+        |--------------------------------------------------------------------------
+        */
+
+        $livraison = Livraison::create($validated);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Charger les relations nécessaires au mail
+        |--------------------------------------------------------------------------
+        */
+
+        $livraison->load('commande', 'livreur');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Envoyer le mail au livreur
+        |--------------------------------------------------------------------------
+        */
+
+        Mail::to($livreur->email)
+            ->send(new LivraisonAffectee($livraison));
+
+        /*
+        |--------------------------------------------------------------------------
+        | Retour vers le tableau de bord
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route('admin.dashboard')
+            ->with(
+                'success',
+                'Livraison créée avec succès. Le livreur a été attribué automatiquement et un mail lui a été envoyé.'
+            );
+    }
 
     /**
      * Afficher une livraison.
@@ -91,6 +154,8 @@ class LivraisonController extends Controller
 
     /**
      * Modifier une livraison.
+     *
+     * Le numéro et la date ne peuvent pas être modifiés.
      */
     public function update(Request $request, string $id)
     {
@@ -98,28 +163,11 @@ class LivraisonController extends Controller
 
         $validated = $request->validate(
             [
-                'num_livraison' => [
-                    'sometimes',
-                    'integer',
-                    Rule::unique('livraisons', 'num_livraison')
-                        ->ignore($livraison->id),
-                ],
-
                 'commande_id' => [
                     'sometimes',
                     'exists:commandes,id',
                     Rule::unique('livraisons', 'commande_id')
                         ->ignore($livraison->id),
-                ],
-
-                'livreur_id' => [
-                    'sometimes',
-                    'exists:users,id',
-                ],
-
-                'date_livraison' => [
-                    'nullable',
-                    'date',
                 ],
 
                 'statut' => [
@@ -138,9 +186,6 @@ class LivraisonController extends Controller
 
                 'commande_id.exists' =>
                     'La commande sélectionnée n’existe pas.',
-
-                'num_livraison.unique' =>
-                    'Ce numéro de livraison existe déjà.',
             ]
         );
 
@@ -151,10 +196,19 @@ class LivraisonController extends Controller
 
     /**
      * Supprimer une livraison.
+     *
+     * Une livraison déjà livrée ne peut pas être supprimée.
      */
     public function destroy(string $id)
     {
         $livraison = Livraison::findOrFail($id);
+
+        if ($livraison->statut === 'Livrée') {
+            return response()->json([
+                'message' =>
+                    'Impossible de supprimer une livraison déjà livrée.'
+            ], 400);
+        }
 
         $livraison->delete();
 
@@ -175,10 +229,18 @@ class LivraisonController extends Controller
 
     /**
      * Marquer une livraison comme livrée.
+     *
+     * Seul le livreur auquel la livraison est assignée peut la marquer comme livrée.
      */
     public function marquerLivree($id)
     {
         $livraison = Livraison::findOrFail($id);
+
+        if ($livraison->livreur_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'Non autorisé.'
+            ], 403);
+        }
 
         $livraison->statut = 'Livrée';
         $livraison->save();
@@ -212,3 +274,4 @@ class LivraisonController extends Controller
         ]);
     }
 }
+ 

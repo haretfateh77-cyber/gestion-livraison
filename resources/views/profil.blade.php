@@ -434,5 +434,7 @@
 
 </div>
 
+@include('partials.accessibility')
+
 </body>
 </html>
