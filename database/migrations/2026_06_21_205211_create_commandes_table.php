@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('commandes', function (Blueprint $table) {
             $table->id();
-            $table->integer('num_commande')->unique();
+            
             $table->date('date_commande');
             $table->decimal('montant', 10, 2);
             $table->string('statut')->default('en_attente');

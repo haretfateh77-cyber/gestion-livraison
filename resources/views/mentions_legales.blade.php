@@ -75,14 +75,6 @@
             padding-left: 25px;
         }
 
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffecb5;
-            color: #664d03;
-            padding: 18px;
-            border-radius: 8px;
-            margin-top: 25px;
-        }
 
         .back {
             display: inline-block;
@@ -133,33 +125,37 @@
 
     <p>
         <strong>Nom :</strong>
-        Carrefour - Application de gestion des livraisons
+        Application de gestion des livraisons
     </p>
 
     <p>
-        <strong>Type :</strong>
-        Application interne de gestion des livraisons
+        <strong>Contexte :</strong>
+        Application interne réalisée par Fatah HARET dans le cadre d'un projet
+        de formation (titre professionnel Développeur Web et Web Mobile),
+        en alternance chez Carrefour.
     </p>
 
 
     <h2>Responsable de la publication</h2>
 
     <p>
-        Responsable de la publication :
-        Administrateur de l'application.
+        Fatah HARET, développeur de l'application.
     </p>
 
 
     <h2>Hébergement</h2>
 
     <p>
-        Cette application est actuellement utilisée dans le cadre
-        d'un environnement de développement et de démonstration.
+        <p>
+    L'application est hébergée localement sur le poste du développeur,
+    dans des conteneurs Docker, et rendue accessible en HTTPS grâce au
+    service de tunnel de Cloudflare.
+</p>
     </p>
 
     <p>
-        Les informations relatives à l'hébergeur devront être
-        complétées lors de la mise en production de l'application.
+        Il s'agit d'un environnement de démonstration et non d'une mise en
+        production publique.
     </p>
 
 
@@ -192,20 +188,6 @@
         de l'application.
     </p>
 
-
-    <div class="warning">
-
-        <strong>Informations à compléter :</strong>
-
-        <p>
-            Les mentions telles que le numéro SIRET, l'adresse
-            officielle de l'éditeur, les coordonnées du responsable
-            et les informations précises de l'hébergeur devront être
-            renseignées avant une éventuelle mise en production
-            publique.
-        </p>
-
-    </div>
 
 
     <a href="{{ route('home') }}" class="back">
