@@ -190,23 +190,18 @@
 
                 @forelse($livraisonsRecentes as $livraison)
 
-    <li>
+                    <li>
+                        <strong>Livraison #{{ $livraison->id }}</strong>
+                        - {{ $livraison->statut }}
+                    </li>
 
-        <strong>
-            Livraison #{{ $livraison->id }}
-        </strong>
+                @empty
 
-        - {{ $livraison->statut }}
+                    <li>
+                        Aucune livraison récente.
+                    </li>
 
-    </li>
-
-@empty
-
-    <li>
-        Aucune livraison récente.
-    </li>
-
-@endforelse
+                @endforelse
 
             </ul>
 
@@ -253,15 +248,14 @@
 
             @csrf
 
-
-
             <select name="commande_id" required>
 
                 <option value="">
                     Choisir une commande
                 </option>
 
-                @foreach($commandes as $commande)
+                {{-- Seulement les commandes qui n'ont pas encore de livraison --}}
+                @forelse($commandesDisponibles as $commande)
 
                     <option
                         value="{{ $commande->id }}"
@@ -270,7 +264,13 @@
                         Commande #{{ $commande->id }}
                     </option>
 
-                @endforeach
+                @empty
+
+                    <option value="" disabled>
+                        Aucune commande en attente de livraison
+                    </option>
+
+                @endforelse
 
             </select>
 
@@ -360,7 +360,7 @@
 
                     <tr>
 
-                        <td colspan="5">
+                        <td colspan="4">
                             Aucune commande récente.
                         </td>
 
@@ -375,7 +375,7 @@
     </div>
 
 
-        <footer>
+    <footer>
         © {{ date('Y') }} Carrefour -
         Application de gestion des livraisons
     </footer>

@@ -65,6 +65,9 @@ class LivraisonController extends Controller
 
         $livraison = Livraison::create($validated);
 
+        // La commande associée prend le même statut que sa livraison
+        $livraison->commande->update(['statut' => $livraison->statut]);
+
         // Notification par e-mail au livreur (relations chargées pour le contenu du mail)
         $livraison->load('commande', 'livreur');
         Mail::to($livreur->email)->send(new LivraisonAffectee($livraison));
